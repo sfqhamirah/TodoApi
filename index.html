@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Todo App</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: #2E75B5;
+            text-align: center;
+        }
+
+        input {
+            padding: 8px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #2E75B6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        button:hover {
+            background-color: #1F5C9E;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            background: white;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+		
+		li span {
+			flex: 1;
+		}
+		
+		li button {
+			margin-left: 10px;
+		}
+
+        .completed {
+            text-decoration: line-through;
+            color: #999;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>My Todo List</h1>
+
+    <input id="taskInput" type="text" placeholder="Enter task name...">
+    <button onclick="addTask()">Add Task</button>
+
+    <ul id="taskList"></ul>
+
+    <script>
+        function loadTasks() {
+            fetch("http://localhost:5219/todos")
+                .then(response => response.json())
+                .then(tasks => {
+
+                    let list = document.getElementById("taskList");
+                    list.innerHTML = "";
+
+                    tasks.forEach(task => {
+
+                        let li = document.createElement("li");
+
+                        let span = document.createElement("span");
+                        span.textContent = task.name;
+                        span.className = task.isComplete ? "completed" : "";
+
+                        li.appendChild(span);
+
+                        let completeBtn = document.createElement("button");
+                        completeBtn.textContent = task.isComplete ? "✓ Done" : "Complete";
+                        completeBtn.onclick = () => completeTask(task.id);
+
+                        let deleteBtn = document.createElement("button");
+                        deleteBtn.textContent = "Delete";
+                        deleteBtn.onclick = () => deleteTask(task.id);
+
+                        li.appendChild(completeBtn);
+                        li.appendChild(deleteBtn);
+
+                        list.appendChild(li);
+                    });
+                });
+        }
+
+        function addTask() {
+
+            let input = document.getElementById("taskInput");
+            let taskName = input.value.trim();
+
+            if (taskName === "") {
+                alert("Please enter a task!");
+                return;
+            }
+
+            fetch("http://localhost:5219/todos", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: taskName,
+                    isComplete: false
+                })
+            })
+            .then(response => response.json())
+            .then(() => {
+                input.value = "";
+                loadTasks();
+            });
+        }
+
+        function completeTask(id) {
+            fetch(`http://localhost:5219/todos/${id}`, {
+                method: "PUT"
+            })
+            .then(() => loadTasks());
+        }
+
+        function deleteTask(id) {
+            fetch(`http://localhost:5219/todos/${id}`, {
+                method: "DELETE"
+            })
+            .then(() => loadTasks());
+        }
+
+        loadTasks();
+    </script>
+
+</body>
+</html>
