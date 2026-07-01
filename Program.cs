@@ -18,7 +18,8 @@ builder.Services.AddCors();
 // 1. Register TodoDb with Dependency Injection
 // 2. Configure Entity Framework to use SQLite
 // 3. A file named todos.db will be created automatically
-builder.Services.AddDbContext<TodoDb>(opt => opt.UseSqlite("Data Source=todos.db"));
+//builder.Services.AddDbContext<TodoDb>(opt => opt.UseSqlite("Data Source=todos.db"));
+builder.Services.AddDbContext<TodoDb>(opt => opt.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=TodoDb;Trusted_Connection=True;TrustServerCertificate=True;"));
 
 var app = builder.Build(); // Build the application using all configured services
 
