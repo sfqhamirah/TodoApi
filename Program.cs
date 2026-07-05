@@ -21,7 +21,10 @@ builder.Services.AddCors();
 //builder.Services.AddDbContext<TodoDb>(opt => opt.UseSqlite("Data Source=todos.db"));
 //builder.Services.AddDbContext<TodoDb>(opt => opt.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=TodoDb;Trusted_Connection=True;TrustServerCertificate=True;"));
 builder.Services.AddDbContext<TodoDb>(opt =>
-    opt.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL")));
+{
+    var connString = Environment.GetEnvironmentVariable("DATABASE_URL");
+    opt.UseNpgsql(connString + ";SSL Mode=Require;Trust Server Certificate=true");
+});
 
 var app = builder.Build(); // Build the application using all configured services
 
