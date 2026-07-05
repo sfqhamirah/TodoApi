@@ -1,9 +1,0 @@
-{
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "startCommand": "dotnet TodoApi.dll",
-    "restartPolicyType": "ON_FAILURE"
-  }
-}
