@@ -1,16 +1,22 @@
-﻿# Use the official Microsoft .NET SDK image to build the app
+﻿# Use SDK image to build code
 FROM ://microsoft.com AS build
 WORKDIR /src
+
+# Copy solution and project files first to cache dependencies
+COPY ["TodoApi/TodoApi.csproj", "TodoApi/"]
+RUN dotnet restore "TodoApi/TodoApi.csproj"
+
+# Copy everything else and publish the build
 COPY . .
-RUN dotnet restore
-RUN dotnet publish -c Release -o /app
+WORKDIR "/src/TodoApi"
+RUN dotnet publish "TodoApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Use the official runtime image to run the app
-FROM ://microsoft.com
+# Setup the final runtime container
+FROM ://microsoft.com AS final
 WORKDIR /app
-COPY --from=build /app .
+COPY --from=build /app/publish .
 
-# Expose the port and dynamically bind to Railway's $PORT
+# Explicitly bind to standard container routing paths
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
