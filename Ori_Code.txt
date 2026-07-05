@@ -19,9 +19,7 @@ builder.Services.AddCors();
 // 2. Configure Entity Framework to use SQLite
 // 3. A file named todos.db will be created automatically
 //builder.Services.AddDbContext<TodoDb>(opt => opt.UseSqlite("Data Source=todos.db"));
-//builder.Services.AddDbContext<TodoDb>(opt => opt.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=TodoDb;Trusted_Connection=True;TrustServerCertificate=True;"));
-builder.Services.AddDbContext<TodoDb>(opt =>
-    opt.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL")));
+builder.Services.AddDbContext<TodoDb>(opt => opt.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=TodoDb;Trusted_Connection=True;TrustServerCertificate=True;"));
 
 var app = builder.Build(); // Build the application using all configured services
 
@@ -67,6 +65,43 @@ using (var scope = app.Services.CreateScope()) //Creates a temporary service sco
     db.Database.EnsureCreated(); //cheack exit or not - if not will create database and table
 }
 
+/*
+//our data - stored in memory for now
+var todos = new List<TodoItem>();
+
+//GET all todos
+app.MapGet("/todos", () =>
+{
+    return Results.Ok(todos);
+});
+
+//POST - add new todo
+app.MapPost("/todos", (TodoItem todo) =>
+{
+    todo.Id = todos.Count + 1; //auto generate id
+    todos.Add(todo);
+    return Results.Created($"/todos/{todo.Id}", todo);
+});
+
+//PUT - mark complete
+app.MapPut("/todos/{id}", (int id) =>
+{
+    var todo = todos.FirstOrDefault(t => t.Id == id);
+    if (todo == null) return Results.NotFound("Task not found!");
+    todo.IsComplete = true;
+    return Results.Ok(todo);
+});
+
+//DELETE - remove task
+app.MapDelete("/todos/{id}", (int id) =>
+{
+    var todo = todos.FirstOrDefault(t => t.Id == id);
+    if (todo == null) return Results.NotFound("Task not found!");
+    todos.Remove(todo);
+    return Results.Ok("Task deleted!");
+});
+//{id} is a route parameter - it captures whatever number the user puts in the url
+*/
 app.Run(); //start web browser
 
 //TodoItem class
@@ -77,10 +112,10 @@ class TodoItem
     public bool IsComplete { get; set;}
 }
 
-//Data-DBContext - the bridge between C# and database
+//DBContext - the bridge between C# and database
 class TodoDb : DbContext //DBContext - The bridge between C# objects and database tables
 {
     public TodoDb(DbContextOptions<TodoDb> options) : base(options) { }  // Constructor receives database configuration
-    public DbSet<TodoItem> Todos { get; set; } // Represents the Todos table 
+    public DbSet<TodoItem> Todos { get; set; } // Represents the Todos table in SQLite
 }
 
