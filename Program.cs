@@ -22,9 +22,31 @@ builder.Services.AddCors();
 //builder.Services.AddDbContext<TodoDb>(opt => opt.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=TodoDb;Trusted_Connection=True;TrustServerCertificate=True;"));
 builder.Services.AddDbContext<TodoDb>(opt =>
 {
-    var connString = Environment.GetEnvironmentVariable("DATABASE_URL");
-    // If DATABASE_URL already has a query string, appending with a semicolon might break it.
-    // Try passing it directly first if the linked variable alone doesn't fix it:
+    var rawUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+    if (string.IsNullOrEmpty(rawUrl))
+    {
+        throw new InvalidOperationException(
+            "DATABASE_URL is not set. On Railway, add a Postgres database and reference " +
+            "its DATABASE_URL variable in this service's Variables tab.");
+    }
+
+    // Railway gives DATABASE_URL as a URI (postgres://user:pass@host:port/db),
+    // but Npgsql needs a key=value connection string. Convert it here.
+    var uri = new Uri(rawUrl);
+    var userInfo = uri.UserInfo.Split(':', 2);
+
+    var connString = new Npgsql.NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
+        Port = uri.Port > 0 ? uri.Port : 5432,
+        Username = userInfo[0],
+        Password = userInfo.Length > 1 ? userInfo[1] : "",
+        Database = uri.AbsolutePath.TrimStart('/'),
+        SslMode = Npgsql.SslMode.Require,
+        TrustServerCertificate = true
+    }.ToString();
+
     opt.UseNpgsql(connString);
 });
 
