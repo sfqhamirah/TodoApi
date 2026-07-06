@@ -23,7 +23,9 @@ builder.Services.AddCors();
 builder.Services.AddDbContext<TodoDb>(opt =>
 {
     var connString = Environment.GetEnvironmentVariable("DATABASE_URL");
-    opt.UseNpgsql(connString + ";SSL Mode=Require;Trust Server Certificate=true");
+    // If DATABASE_URL already has a query string, appending with a semicolon might break it.
+    // Try passing it directly first if the linked variable alone doesn't fix it:
+    opt.UseNpgsql(connString);
 });
 
 var app = builder.Build(); // Build the application using all configured services
