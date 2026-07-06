@@ -52,6 +52,9 @@ builder.Services.AddDbContext<TodoDb>(opt =>
 
 var app = builder.Build(); // Build the application using all configured services
 
+app.UseDefaultFiles(); // makes "/" automatically load index.html from wwwroot
+app.UseStaticFiles();  // serves files (html, css, js) from wwwroot
+
 app.UseSwagger(); // Enable Swagger JSON endpoint
 app.UseSwaggerUI(); // Enable Swagger UI in the browser
 app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
