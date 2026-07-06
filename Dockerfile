@@ -1,18 +1,19 @@
 ﻿# Use SDK image to build code
-FROM ://microsoft.com AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy solution and project files first to cache dependencies
-COPY ["TodoApi/TodoApi.csproj", "TodoApi/"]
-RUN dotnet restore "TodoApi/TodoApi.csproj"
+# Copy project file first to cache dependencies
+# Changed from ["TodoApi/TodoApi.csproj", "TodoApi/"]
+COPY ["TodoApi.csproj", "./"]
+RUN dotnet restore "TodoApi.csproj"
 
 # Copy everything else and publish the build
 COPY . .
-WORKDIR "/src/TodoApi"
+# Removed: WORKDIR "/src/TodoApi" since we are already in /src
 RUN dotnet publish "TodoApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Setup the final runtime container
-FROM ://microsoft.com AS final
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
